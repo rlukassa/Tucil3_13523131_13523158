@@ -1,0 +1,33 @@
+// Permainan Rush Hour - Implementasi Java (Algoritma pathfinding Greedy Best First Search, UCS, A*)
+
+- Pathfinding minimal menggunakan 1 (tapi gunakan 2 atau lebih saja) 
+- Algoritma dijalankan secara terpisah , ditentukan berdasarkan input pengguna
+
+Alur Program 
+// [INPUT] konfigurasi .txt 
+ --- Dimensi Papan dengan variabel A dan B  (AxB)
+ --- Banyak piece (Bukan primary piece) dengan variabel N 
+ --- Konfigurasi papan mencakup penempatan piece dan primary piece, dengan P adalah Primary Piece dan K adalah Pintu Keluar
+ --- Huruf yang berbeda adalah piece yang berbeda, Cell kosong ditandai dengan tanda titik (.)
+ --- Contoh : 
+
+
+ 6 6 
+ 12 
+ AAB..F
+ ..BCDF
+ GPPCDFK
+ GH.III
+ GHJ...
+ LLJMM.
+
+ // [INPUT] Alogritma Pathfinding
+ // [INPUT] Heuristik 
+ // [OUTPUT] Banyaknya gerakan yang diperiksa 
+        tentusaja suatu gerakan bisa bergerak, ketika arah disampingnya ke "." atau kosong
+
+// waktu eksekusi program 
+// print berwarna tiap piece yang berbeda, pintu keluar dan primary piece
+// GUI animasi (JavaFx)
+
+
