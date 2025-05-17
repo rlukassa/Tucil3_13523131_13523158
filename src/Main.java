@@ -1,6 +1,7 @@
 package src;
 import java.io.*;
 import java.util.*;
+// import java.io.File ; 
 
 
 public class Main {
@@ -8,15 +9,17 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Masukkan nama file input (contoh: input.txt): ");
         String filename = scanner.nextLine();
-        System.out.println("Pilih algoritma (UCS/Greedy/AStar): ");
-        String algo = scanner.nextLine();
+    
 
         // Baca input dari file
         GameBoard initialBoard = readInput(filename);
         if (initialBoard == null) {
             System.out.println("Gagal membaca file input.");
+            scanner.close();
             return;
         }
+        System.out.println("Pilih algoritma (UCS/Greedy/AStar): ");
+        String algo = scanner.nextLine();
 
         // Jalankan solver
         Solver solver = new Solver(algo);
@@ -34,19 +37,23 @@ public class Main {
             System.out.println("Tidak ditemukan solusi.");
         }
         scanner.close();
-    }
-
-    private static GameBoard readInput(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+    }    private static GameBoard readInput(String filename) {
+        try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) {
             String[] dims = br.readLine().split(" ");
-            int rows = Integer.parseInt(dims[0]);
-            int cols = Integer.parseInt(dims[1]);
-            int n = Integer.parseInt(br.readLine()); // Jumlah piece bukan primary
+            int rows = Integer.parseInt(dims[0].trim()); 
+            System.out.println("rows: " + rows); // debug ; 
+            int cols = Integer.parseInt(dims[1].trim());
+            System.out.println("cols: " + cols); // debug ;
+            int n = Integer.parseInt(br.readLine().trim()); // Jumlah piece bukan primary
+            System.out.println("n: " + n); // debug ;
 
             int exitX = -1, exitY = -1;
             char[][] grid = new char[rows][cols];
             for (int i = 0; i < rows; i++) {
                 String line = br.readLine();
+                // debug ; 
+                System.out.println("line: " + line); // debug ;
+                line = line.trim();
                 for (int j = 0; j < cols; j++) {
                     grid[i][j] = line.charAt(j);
                 }
@@ -90,6 +97,7 @@ public class Main {
                 }
             }
             return new GameBoard(rows, cols, pieces, exitX, exitY);
+
         } catch (IOException e) {
             e.printStackTrace();
             return null;

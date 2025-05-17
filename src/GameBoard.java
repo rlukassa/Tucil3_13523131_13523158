@@ -21,6 +21,7 @@ public class GameBoard {
             }
         }
         updateGrid();
+        // printGameBoard();  debug
     }
 
     // Membuat grid berdasarkan posisi piece
