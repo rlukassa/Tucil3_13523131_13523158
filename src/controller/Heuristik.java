@@ -1,5 +1,0 @@
-package controller;
-
-interface Heuristik {
-    
-}
