@@ -5,23 +5,48 @@ import java.util.*;
 
 
 public class Main {
+    // ANSI colors and styles for CLI interface
+    private static final String CYAN_BOLD = "\u001B[1;96m";
+    private static final String GREEN_BOLD = "\u001B[1;92m";
+    private static final String YELLOW_BOLD = "\u001B[1;93m";
+    private static final String RED_BOLD = "\u001B[1;91m";
+    private static final String BLUE_BG = "\u001B[44m";
+    
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Masukkan nama file input (contoh: input.txt): ");
+        
+        // Print welcome banner
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+        System.out.println(CYAN_BOLD + 
+            "╔═══════════════════════════════════════════════════════╗\n" +
+            "║                                                       ║\n" +
+            "║                     RUSH HOUR                         ║\n" +
+            "║          UCS, Greedy Best First Search, A*            ║\n" +
+            "║                   Implementation                      ║\n" +
+            "║                                                       ║\n" +
+            "╚═══════════════════════════════════════════════════════╝" + RESET);
+        
+        System.out.println(YELLOW_BOLD + "\n► Masukkan nama file input " + RESET + "(contoh: test.txt): ");
+        System.out.print(BLUE_BG + " ➤ " + RESET + " ");
         String filename = scanner.nextLine();
     
-
         // Baca input dari file
+        System.out.println(YELLOW_BOLD + "\n⌛ Membaca file input..." + RESET);
         GameBoard initialBoard = readInput(filename);
         if (initialBoard == null) {
-            System.out.println("Gagal membaca file input.");
+            System.out.println(RED_BOLD + "✖ Gagal membaca file input." + RESET);
             scanner.close();
             return;
         }
-        System.out.println("Pilih algoritma (UCS/Greedy/AStar): ");
+        
+        System.out.println(GREEN_BOLD + "✓ File berhasil dibaca!" + RESET);
+        System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar): ");
+        System.out.print(BLUE_BG + " ➤ " + RESET + " ");
         String algo = scanner.nextLine();
 
         // Jalankan solver
+        System.out.println(YELLOW_BOLD + "\n⌛ Mencari solusi menggunakan algoritma " + algo + "..." + RESET);
         Solver solver = new Solver(algo);
         long startTime = System.currentTimeMillis();
         List<GameBoard> solution = solver.solve(initialBoard);
@@ -29,30 +54,31 @@ public class Main {
 
         // Tampilkan hasil
         if (solution != null) {
-            System.out.println("Solusi ditemukan!");
-            System.out.println("Jumlah node yang dikunjungi: " + solver.getNodesVisited());
-            System.out.println("Waktu eksekusi: " + (endTime - startTime) + " ms");
+            System.out.println(GREEN_BOLD + "✓ Solusi ditemukan!" + RESET);
+            System.out.println(CYAN_BOLD + "┌───────────────────────────────────────┐");
+            System.out.println("│  Statistik Pencarian:                 │");
+            System.out.println("├───────────────────────────────────────┤");
+            System.out.printf("│  ◆ Node dikunjungi : %-16d │\n", solver.getNodesVisited());
+            System.out.printf("│  ◆ Waktu eksekusi  : %-5d ms         │\n", (endTime - startTime));
+            System.out.println("└───────────────────────────────────────┘" + RESET);
+            
             printSolution(solution);
         } else {
-            System.out.println("Tidak ditemukan solusi.");
+            System.out.println(RED_BOLD + "✖ Tidak ditemukan solusi." + RESET);
         }
         scanner.close();
     }    private static GameBoard readInput(String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) {
             String[] dims = br.readLine().split(" ");
             int rows = Integer.parseInt(dims[0].trim()); 
-            System.out.println("rows: " + rows); // debug ; 
             int cols = Integer.parseInt(dims[1].trim());
-            System.out.println("cols: " + cols); // debug ;
             int n = Integer.parseInt(br.readLine().trim()); // Jumlah piece bukan primary
-            System.out.println("n: " + n); // debug ;
 
             int exitX = -1, exitY = -1;
             char[][] grid = new char[rows][cols];
             for (int i = 0; i < rows; i++) {
                 String line = br.readLine();
                 // debug ; 
-                System.out.println("line: " + line); // debug ;
                 line = line.trim();
                 for (int j = 0; j < cols; j++) {
                     grid[i][j] = line.charAt(j);
@@ -102,12 +128,34 @@ public class Main {
             e.printStackTrace();
             return null;
         }
-    }    private static void printSolution(List<GameBoard> solution) {
-        System.out.println("Papan Awal");
+    }    // ANSI styling codes
+    private static final String BOLD = "\u001B[1m";
+    private static final String UNDERLINE = "\u001B[4m";
+      private static void printSolution(List<GameBoard> solution) {
+        
+        System.out.println(BOLD + UNDERLINE + "Papan Awal:" + RESET);
         printBoard(solution.get(0));
+        
+        int totalSteps = solution.size() - 1;
+        
         for (int i = 1; i < solution.size(); i++) {
             String moveInfo = findMoveInfo(solution.get(i-1), solution.get(i));
-            System.out.println("Gerakan " + i + ": " + moveInfo);
+            String[] parts = moveInfo.split(" ke ");
+            String piece = parts[0];
+            String direction = parts[1];
+            
+            // Get color for this piece
+            String pieceColor = (piece.equals("P")) ? PRIMARY_COLOR : 
+                colorMap.computeIfAbsent(piece.charAt(0), key -> 
+                    COLORS[Math.abs(key.hashCode()) % COLORS.length]);
+            
+            System.out.println(BOLD + "┌─────────────────────┐");
+            System.out.printf("│ Langkah %2d dari %2d  │\n", i, totalSteps);
+            System.out.print("└─────────────────────┘" + RESET + "\n");
+            
+            System.out.print("Gerakan: " + pieceColor + " " + piece + " " + RESET);
+            System.out.println("ke " + BOLD + direction + RESET);
+            
             printBoard(solution.get(i));
         }
     }
@@ -134,27 +182,73 @@ public class Main {
                     direction = "atas";
                 }
                 
-                return pieceId + " ke " + direction;
+                return pieceId + "  ke " + direction;
             }
         }
         return "Tidak ada gerakan";
-    }
-
+    }    // ANSI color codes
+    private static final String RESET = "\u001B[0m";
+    private static final String[] COLORS = {
+        "\u001B[31m", // Red
+        "\u001B[32m", // Green
+        "\u001B[33m", // Yellow
+        "\u001B[34m", // Blue
+        "\u001B[35m", // Magenta
+        "\u001B[36m", // Cyan
+        "\u001B[91m", // Bright Red
+        "\u001B[92m", // Bright Green
+        "\u001B[93m", // Bright Yellow
+        "\u001B[94m", // Bright Blue
+        "\u001B[95m", // Bright Magenta
+        "\u001B[96m"  // Bright Cyan
+    };
+    
+    private static final String PRIMARY_COLOR = "\u001B[97;42m"; // White on green background
+    private static final String EXIT_COLOR = "\u001B[97;42m";    // White on green background
+    private static final String EMPTY_COLOR = "\u001B[90m";      // Dark gray
+    
+    private static final Map<Character, String> colorMap = new HashMap<>();
+    
     private static void printBoard(GameBoard board) {
         char[][] grid = board.getGrid();
-        for (char[] row : grid) {
-            for (char c : row) {
-                // Tambahkan warna sederhana (hanya teks, bisa diperluas dengan library ANSI)
-                if (c == 'P') {
-                    System.out.print("[P]");
+        int rows = grid.length;
+        int cols = grid[0].length;
+        
+        // Print top border
+        System.out.print("┌");
+        for (int j = 0; j < cols; j++) {
+            System.out.print("───");
+        }
+        System.out.println("┐");
+        
+        // Print grid with colors
+        for (int i = 0; i < rows; i++) {
+            System.out.print("│");
+            for (int j = 0; j < cols; j++) {
+                char c = grid[i][j];
+                if (c == '.') {
+                    System.out.print(EMPTY_COLOR + " · " + RESET);
+                } else if (c == 'P') {
+                    System.out.print(PRIMARY_COLOR + " P " + RESET);
                 } else if (c == 'K') {
-                    System.out.print("[K]");
+                    System.out.print(EXIT_COLOR + " K " + RESET);
                 } else {
-                    System.out.print(" " + c + " ");
+                    // Get or assign a color for this character
+                    String color = colorMap.computeIfAbsent(c, key -> 
+                        COLORS[Math.abs(key.hashCode()) % COLORS.length]);
+                    
+                    System.out.print(color + " " + c + " " + RESET);
                 }
             }
-            System.out.println();
+            System.out.println("│");
         }
+        
+        // Print bottom border
+        System.out.print("└");
+        for (int j = 0; j < cols; j++) {
+            System.out.print("───");
+        }
+        System.out.println("┘");
         System.out.println();
     }
 }
