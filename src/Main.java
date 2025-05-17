@@ -102,15 +102,42 @@ public class Main {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private static void printSolution(List<GameBoard> solution) {
+    }    private static void printSolution(List<GameBoard> solution) {
         System.out.println("Papan Awal");
         printBoard(solution.get(0));
         for (int i = 1; i < solution.size(); i++) {
-            System.out.println("Gerakan " + i + ": ");
+            String moveInfo = findMoveInfo(solution.get(i-1), solution.get(i));
+            System.out.println("Gerakan " + i + ": " + moveInfo);
             printBoard(solution.get(i));
         }
+    }
+    
+    private static String findMoveInfo(GameBoard prev, GameBoard current) {
+        ArrayList<Piece> prevPieces = prev.getPieces();
+        ArrayList<Piece> currentPieces = current.getPieces();
+        
+        for (int i = 0; i < prevPieces.size(); i++) {
+            Piece prevPiece = prevPieces.get(i);
+            Piece currPiece = currentPieces.get(i);
+            
+            if (prevPiece.getX() != currPiece.getX() || prevPiece.getY() != currPiece.getY()) {
+                char pieceId = prevPiece.getId();
+                String direction;
+                
+                if (currPiece.getX() > prevPiece.getX()) {
+                    direction = "kanan";
+                } else if (currPiece.getX() < prevPiece.getX()) {
+                    direction = "kiri";
+                } else if (currPiece.getY() > prevPiece.getY()) {
+                    direction = "bawah";
+                } else {
+                    direction = "atas";
+                }
+                
+                return pieceId + " ke " + direction;
+            }
+        }
+        return "Tidak ada gerakan";
     }
 
     private static void printBoard(GameBoard board) {

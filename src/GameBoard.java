@@ -7,6 +7,7 @@ public class GameBoard {
     private ArrayList<Piece> pieces;
     private int exitX, exitY; // Koordinat pintu keluar
     private Piece primaryPiece;
+    // private String gerakan ;  
 
     public GameBoard(int rows, int cols, ArrayList<Piece> pieces, int exitX, int exitY) {
         this.rows = rows;
