@@ -51,10 +51,16 @@ public class GameBoard {
     // Mengecek apakah primary piece sudah di pintu keluar
     public boolean isGoal() {
         if (primaryPiece.isHorizontal()) {
-            // Consider goal reached if primary piece's right end is at or beyond exitX
+            // If exitX is outside board (e.g. == cols), consider goal reached if primary piece right end is at exitX - 1
+            if (exitX >= cols) {
+                return primaryPiece.getX() + primaryPiece.getSize() - 1 == cols - 1;
+            }
             return primaryPiece.getX() + primaryPiece.getSize() - 1 >= exitX;
         } else {
             // Similarly for vertical
+            if (exitY >= rows) {
+                return primaryPiece.getY() + primaryPiece.getSize() - 1 == rows - 1;
+            }
             return primaryPiece.getY() + primaryPiece.getSize() - 1 >= exitY;
         }
     }
@@ -132,4 +138,6 @@ public class GameBoard {
     public char[][] getGrid() { return grid; }
     public ArrayList<Piece> getPieces() { return pieces; }
     public Piece getPrimaryPiece() { return primaryPiece; }
+    public int getExitX() { return exitX; }
+    public int getExitY() { return exitY; }
 }

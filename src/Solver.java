@@ -51,8 +51,12 @@ public class Solver {
                 }
             }
         }
+
+        System.out.println("Node Visited: " + nodesVisited);
         return null;
     }
+
+
 
     private List<GameBoard> greedyBestFirstSearch(GameBoard initialBoard) {
         PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(Node::getHeuristic));
@@ -137,6 +141,9 @@ public class Solver {
                 sb.append(c);
             }
         }
+        // Append primary piece position and exit position to distinguish states
+        sb.append("P").append(board.getPrimaryPiece().getX()).append(",").append(board.getPrimaryPiece().getY());
+        sb.append("E").append(board.getExitX()).append(",").append(board.getExitY());
         return sb.toString();
     }
 
