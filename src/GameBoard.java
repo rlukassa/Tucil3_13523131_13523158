@@ -7,8 +7,7 @@ public class GameBoard {
     private ArrayList<Piece> pieces;
     private int exitX, exitY; // Koordinat pintu keluar
     private Piece primaryPiece;
-    // private String gerakan ;  
-
+    
     public GameBoard(int rows, int cols, ArrayList<Piece> pieces, int exitX, int exitY) {
         this.rows = rows;
         this.cols = cols;
@@ -22,7 +21,6 @@ public class GameBoard {
             }
         }
         updateGrid();
-        // printGameBoard();  debug
     }
 
     // Membuat grid berdasarkan posisi piece
@@ -51,19 +49,54 @@ public class GameBoard {
 
     // Mengecek apakah primary piece sudah di pintu keluar
     public boolean isGoal() {
-        if (primaryPiece.isHorizontal()) {
-            // If exitX is outside board (e.g. == cols), consider goal reached if primary piece right end is at exitX - 1
-            if (exitX >= cols) {
-                return primaryPiece.getX() + primaryPiece.getSize() - 1 == cols - 1;
-            }
-            return primaryPiece.getX() + primaryPiece.getSize() - 1 >= exitX;
-        } else {
-            // Similarly for vertical
-            if (exitY >= rows) {
-                return primaryPiece.getY() + primaryPiece.getSize() - 1 == rows - 1;
-            }
-            return primaryPiece.getY() + primaryPiece.getSize() - 1 >= exitY;
+        int primaryLeft = primaryPiece.getX();
+        int primaryRight = primaryPiece.getX() + primaryPiece.getSize() - 1;
+        int primaryTop = primaryPiece.getY();
+        int primaryBottom = primaryPiece.getY() + primaryPiece.getSize() - 1;
+        
+        // Determine exit position relative to the primary piece
+        // Exit is to the right of the board
+        if (exitX >= cols) {
+            return primaryPiece.isHorizontal() && primaryRight == cols - 1;
+        } 
+        // Exit is to the left of the board 
+        else if (exitX < 0) {
+            return primaryPiece.isHorizontal() && primaryLeft == 0;
+        } 
+        // Exit is above the board
+        else if (exitY < 0) {
+            return !primaryPiece.isHorizontal() && primaryTop == 0;
+        } 
+        // Exit is below the board
+        else if (exitY >= rows) {
+            return !primaryPiece.isHorizontal() && primaryBottom == rows - 1;
         }
+        
+        // Exit is inside the board - we need to check if primary piece is adjacent to exit
+        // For horizontal primary piece
+        if (primaryPiece.isHorizontal()) {
+            // Exit to the right
+            if (exitX > primaryRight && exitY == primaryTop) {
+                return primaryRight == exitX - 1;
+            }
+            // Exit to the left
+            else if (exitX < primaryLeft && exitY == primaryTop) {
+                return primaryLeft == exitX + 1;
+            }
+        }
+        // For vertical primary piece
+        else {
+            // Exit below
+            if (exitY > primaryBottom && exitX == primaryLeft) {
+                return primaryBottom == exitY - 1;
+            }
+            // Exit above
+            else if (exitY < primaryTop && exitX == primaryLeft) {
+                return primaryTop == exitY + 1;
+            }
+        }
+        
+        return false;
     }
 
     // Mendapatkan daftar gerakan yang mungkin
@@ -119,10 +152,40 @@ public class GameBoard {
 
     // Mendapatkan heuristic (jarak Manhattan ke pintu keluar untuk primary piece)
     public int getHeuristic() {
+        int primaryLeft = primaryPiece.getX();
+        int primaryRight = primaryPiece.getX() + primaryPiece.getSize() - 1;
+        int primaryTop = primaryPiece.getY();
+        int primaryBottom = primaryPiece.getY() + primaryPiece.getSize() - 1;
+        
+        // Horizontal primary piece (move left/right to exit)
         if (primaryPiece.isHorizontal()) {
-            return Math.abs(primaryPiece.getX() + primaryPiece.getSize() - 1 - exitX);
-        } else {
-            return Math.abs(primaryPiece.getY() + primaryPiece.getSize() - 1 - exitY);
+            // Exit is to the right of the board
+            if (exitX >= cols) {
+                return exitX - primaryRight;
+            } 
+            // Exit is to the left of the board
+            else if (exitX < 0) {
+                return primaryLeft - exitX;
+            }
+            // Exit is aligned horizontally, but may not be aligned vertically
+            else {
+                return Math.abs(primaryTop - exitY);
+            }
+        } 
+        // Vertical primary piece (move up/down to exit)
+        else {
+            // Exit is below the board
+            if (exitY >= rows) {
+                return exitY - primaryBottom; // Push to move down
+            } 
+            // Exit is above the board
+            else if (exitY < 0) {
+                return primaryTop - exitY; // Push to move up
+            }
+            // Exit is aligned vertically, but may not be aligned horizontally
+            else {
+                return Math.abs(primaryLeft - exitX);
+            }
         }
     }
 

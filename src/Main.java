@@ -75,25 +75,74 @@ public class Main {
             int n = Integer.parseInt(br.readLine().trim()); // Jumlah piece bukan primary
 
             int exitX = -1, exitY = -1;
+            
+            // CHECK FOR EXIT ABOVE THE GRID
+            String topLine = br.readLine();
+            if (topLine.contains("K")) {
+                // Count leading spaces to determine column position
+                int kPos = topLine.indexOf('K');
+                exitX = kPos; // Column position where K is found
+                exitY = -1;   // K is above the grid
+                System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di atas grid pada kolom " + exitX + RESET);
+                // Read a new line to start the grid proper
+                topLine = br.readLine();
+            }
+
             char[][] grid = new char[rows][cols];
             for (int i = 0; i < rows; i++) {
-                String line = br.readLine();
-                // debug ; 
-                line = line.trim();
-                for (int j = 0; j < cols; j++) {
-                    grid[i][j] = line.charAt(j);
+                String line;
+                if (i == 0 && topLine != null) {
+                    // Use topLine for the first row if we already read it
+                    line = topLine;
+                } else {
+                    line = br.readLine();
                 }
-                // Check for characters beyond the declared columns
-                for (int j = cols; j < line.length(); j++) {
-                    char ch = line.charAt(j);
-                    if (ch == 'K') {
-                        exitX = j;
-                        exitY = i;
-                    } else {
-                        System.out.println("Input tidak valid: karakter '" + ch + "' di luar batas kolom.");
-                        return null;
+                line = line.trim();
+                  // Check for left edge K first
+                if (line.charAt(0) == 'K') {
+                    exitX = -1;
+                    exitY = i;
+                    System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di kiri grid pada baris " + exitY + RESET);
+                    // Process the rest of the line normally, but skip the K character
+                    String restOfLine = line.substring(1); // Skip the K at the beginning
+                    for (int j = 0; j < cols; j++) {
+                        if (j < restOfLine.length()) {
+                            grid[i][j] = restOfLine.charAt(j);
+                        } else {
+                            grid[i][j] = '.'; // Fill with empty if needed
+                        }
+                    }
+                } else {
+                    // Process regular line
+                    for (int j = 0; j < cols; j++) {
+                        grid[i][j] = line.charAt(j);
                     }
                 }
+                  // Check for characters beyond the declared columns (right edge exit)
+                // Only do this check for regular lines (not those that had K at the beginning)
+                if (line.charAt(0) != 'K') {
+                    for (int j = cols; j < line.length(); j++) {
+                        char ch = line.charAt(j);
+                        if (ch == 'K') {
+                            exitX = cols;
+                            exitY = i;
+                            System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di kanan grid pada baris " + exitY + RESET);
+                        } else if (ch != ' ') {
+                            System.out.println(RED_BOLD + "Input tidak valid: karakter '" + ch + "' di luar batas kolom." + RESET);
+                            return null;
+                        }
+                    }
+                }
+            }
+            
+            // CHECK FOR EXIT BELOW THE GRID
+            String bottomLine = br.readLine();
+            if (bottomLine != null && bottomLine.contains("K")) {
+                // Count leading spaces to determine column position
+                int kPos = bottomLine.indexOf('K');
+                exitX = kPos; // Column position where K is found
+                exitY = rows; // K is below the grid
+                System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di bawah grid pada kolom " + exitX + RESET);
             }
 
             // Proses grid untuk membuat daftar piece
