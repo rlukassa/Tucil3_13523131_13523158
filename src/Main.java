@@ -27,52 +27,63 @@ public class Main {
             "║                                                       ║\n" +
             "╚═══════════════════════════════════════════════════════╝" + RESET);
         
-        System.out.println(YELLOW_BOLD + "\n► Masukkan nama file input " + RESET + "(contoh: test.txt): ");
-        System.out.print(BLUE_BG + " ➤ " + RESET + " ");
-        String filename = scanner.nextLine();
-    
-        // Baca input dari file
-        System.out.println(YELLOW_BOLD + "\n⌛ Membaca file input..." + RESET);
-        GameBoard initialBoard = readInput(filename);
-        if (initialBoard == null) {
-            System.out.println(RED_BOLD + "✖ Gagal membaca file input." + RESET);
-            scanner.close();
-            return;
-        }
-        
-        System.out.println(GREEN_BOLD + "✓ File berhasil dibaca!" + RESET);
-        System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar): ");
-        System.out.print(BLUE_BG + " ➤ " + RESET + " ");
-        String algo = scanner.nextLine();
+        String filename;
+        GameBoard initialBoard = null;
+        // Loop until a valid file is read
+        do {
+            System.out.println(YELLOW_BOLD + "\n► Masukkan nama file input " + RESET + "(contoh: test.txt): ");
+            System.out.print(BLUE_BG + " ➤ " + RESET + " ");
+            filename = scanner.nextLine();
+
+            // Baca input dari file
+            System.out.println(YELLOW_BOLD + "\n⌛ Membaca file input..." + RESET);
+            initialBoard = readInput(filename);
+            if (initialBoard == null) {
+            System.out.println(RED_BOLD + "X Gagal membaca file input. Silakan coba lagi." + RESET);
+            }
+        } while (initialBoard == null);            System.out.println(GREEN_BOLD + "* File berhasil dibaca!" + RESET);
+
+        String algo;
+        // Loop until a valid algorithm is chosen
+        do {
+            System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar): ");
+            System.out.print(BLUE_BG + " ➤ " + RESET + " ");
+            algo = scanner.nextLine().trim();
+            if (!(algo.equalsIgnoreCase("UCS") || algo.equalsIgnoreCase("Greedy") || algo.equalsIgnoreCase("AStar"))) {
+            System.out.println(RED_BOLD + "X Algoritma tidak valid. Pilih UCS, Greedy, atau AStar." + RESET);
+            algo = null;
+            }
+        } while (algo == null);
 
         // Jalankan solver
         System.out.println(YELLOW_BOLD + "\n⌛ Mencari solusi menggunakan algoritma " + algo + "..." + RESET);
         Solver solver = new Solver(algo);
         long startTime = System.currentTimeMillis();
         List<GameBoard> solution = solver.solve(initialBoard);
-        long endTime = System.currentTimeMillis();
-
-        // Tampilkan hasil
+        long endTime = System.currentTimeMillis();        // Tampilkan hasil
         if (solution != null) {
-            System.out.println(GREEN_BOLD + "✓ Solusi ditemukan!" + RESET);
+            System.out.println(GREEN_BOLD + "+ Solusi ditemukan!" + RESET);
+            
+            // Print solution first
+            printSolution(solution);
+            
+            // Then print statistics
             System.out.println(CYAN_BOLD + "┌───────────────────────────────────────┐");
             System.out.println("│  Statistik Pencarian:                 │");
             System.out.println("├───────────────────────────────────────┤");
-            System.out.printf("│  ◆ Node dikunjungi : %-16d │\n", solver.getNodesVisited());
-            System.out.printf("│  ◆ Waktu eksekusi  : %-5d ms         │\n", (endTime - startTime));
+            System.out.printf("│  + Node dikunjungi : %-16d │\n", solver.getNodesVisited());
+            System.out.printf("│  + Waktu eksekusi  : %-5d ms         │\n", (endTime - startTime));
             System.out.println("└───────────────────────────────────────┘" + RESET);
-            
-            printSolution(solution);
         } else {
-            System.out.println(RED_BOLD + "✖ Tidak ditemukan solusi." + RESET);
+            System.out.println(RED_BOLD + "X Tidak ditemukan solusi." + RESET);
         }
         scanner.close();
     }    private static GameBoard readInput(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) {
-            String[] dims = br.readLine().split(" ");
+        try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) {            String[] dims = br.readLine().split(" ");
             int rows = Integer.parseInt(dims[0].trim()); 
             int cols = Integer.parseInt(dims[1].trim());
-            int n = Integer.parseInt(br.readLine().trim()); // Jumlah piece bukan primary
+            /* Jumlah piece bukan primary - currently unused */
+            br.readLine(); // Skip this line as we're not using the value
 
             int exitX = -1, exitY = -1;
             
@@ -174,7 +185,6 @@ public class Main {
             return new GameBoard(rows, cols, pieces, exitX, exitY);
 
         } catch (IOException e) {
-            e.printStackTrace();
             return null;
         }
     }    // ANSI styling codes

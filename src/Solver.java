@@ -52,7 +52,7 @@ public class Solver {
             }
         }
 
-        System.out.println("Node Visited: " + nodesVisited);
+        // System.out.println("Node Visited: " + nodesVisited);
         return null;
     }
 

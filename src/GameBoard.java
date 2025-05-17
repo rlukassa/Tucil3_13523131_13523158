@@ -69,7 +69,10 @@ public class GameBoard {
         } 
         // Exit is below the board
         else if (exitY >= rows) {
-            return !primaryPiece.isHorizontal() && primaryBottom == rows - 1;
+            // Check if primary piece is vertical and touching the bottom edge
+            boolean atBottomEdge = !primaryPiece.isHorizontal() && primaryBottom == rows - 1;
+            boolean correctColumn = primaryPiece.getX() == exitX;
+            return atBottomEdge && correctColumn;
         }
         
         // Exit is inside the board - we need to check if primary piece is adjacent to exit
@@ -157,6 +160,10 @@ public class GameBoard {
         int primaryTop = primaryPiece.getY();
         int primaryBottom = primaryPiece.getY() + primaryPiece.getSize() - 1;
         
+        // Debug exit position
+        //System.out.println("Exit position: (" + exitX + "," + exitY + ")");
+        //System.out.println("Rows: " + rows + ", Cols: " + cols);
+        
         // Horizontal primary piece (move left/right to exit)
         if (primaryPiece.isHorizontal()) {
             // Exit is to the right of the board
@@ -176,11 +183,13 @@ public class GameBoard {
         else {
             // Exit is below the board
             if (exitY >= rows) {
-                return exitY - primaryBottom; // Push to move down
+                // Strongly encourage moving down to the bottom exit
+                return (rows - 1 - primaryBottom) * 2 + 1; // Prioritize moving down
             } 
             // Exit is above the board
             else if (exitY < 0) {
-                return primaryTop - exitY; // Push to move up
+                // Encourage moving up to the top exit
+                return primaryTop * 2 + 1; // Prioritize moving up
             }
             // Exit is aligned vertically, but may not be aligned horizontally
             else {
@@ -205,3 +214,4 @@ public class GameBoard {
     public int getExitX() { return exitX; }
     public int getExitY() { return exitY; }
 }
+
