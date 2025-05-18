@@ -78,7 +78,8 @@ public class Main {
             System.out.println(RED_BOLD + "X Tidak ditemukan solusi." + RESET);
         }
         scanner.close();
-    }    private static GameBoard readInput(String filename) {
+    }    // Make readInput public static so GUI can access it
+    public static GameBoard readInput(String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) {            String[] dims = br.readLine().split(" ");
             int rows = Integer.parseInt(dims[0].trim()); 
             int cols = Integer.parseInt(dims[1].trim());
