@@ -126,7 +126,7 @@ public class GUI {
         
         statsTextArea = new JTextArea(3, 20);
         statsTextArea.setEditable(false);
-        statsTextArea.setFont(REGULAR_FONT);
+        statsTextArea.setFont(TITLE_FONT);
         statsTextArea.setLineWrap(true);
         statsTextArea.setWrapStyleWord(true);
         statsTextArea.setMargin(new Insets(5, 5, 25, 5)); // atur atur lah ini
@@ -207,17 +207,17 @@ public class GUI {
     private JPanel createNavigationPanel() { // buat panel navigasi dari proses 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
         
-        prevButton = new JButton("◀ Sebelumnya");
+        prevButton = new JButton("<< Sebelumnya");
         prevButton.setFont(REGULAR_FONT);
         prevButton.setEnabled(false);
         prevButton.setFocusPainted(false);
         
-        playToggle = new JToggleButton("▶ Auto Play");
+        playToggle = new JToggleButton(">> Auto Play");
         playToggle.setFont(REGULAR_FONT);
         playToggle.setEnabled(false);
         playToggle.setFocusPainted(false);
         
-        nextButton = new JButton("Selanjutnya ▶");
+        nextButton = new JButton("Selanjutnya >>");
         nextButton.setFont(REGULAR_FONT);
         nextButton.setEnabled(false);
         nextButton.setFocusPainted(false);
@@ -231,7 +231,7 @@ public class GUI {
         panel.add(prevButton);
         panel.add(playToggle);
         panel.add(nextButton);
-        panel.add(new JLabel("Speed:"));
+        panel.add(new JLabel("Kecepatan:"));
         panel.add(speedSlider);
         
         return panel;
@@ -298,7 +298,6 @@ public class GUI {
             }
         });
         
-        // Keyboard navigation
         KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
             public boolean dispatchKeyEvent(KeyEvent e) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
@@ -432,9 +431,9 @@ public class GUI {
     private void updateStatistics() { // info tentang statistik
         StringBuilder sb = new StringBuilder();
         sb.append("Algoritma: ").append(algoBox.getSelectedItem()).append("\n");
-        sb.append("Node dikunjungi: ").append(solver.getNodesVisited()).append("\n");
+        sb.append("Node dikunjungi: ").append(solver.getNodesVisited()).append(" node\n");
         sb.append("Waktu eksekusi: ").append(execTime).append(" ms\n");
-        sb.append("Jumlah langkah: ").append(solutionSteps.size() - 1);
+        sb.append("Jumlah langkah: ").append(solutionSteps.size() - 1).append(" langkah");
         
         statsTextArea.setText(sb.toString());
     }
@@ -530,13 +529,13 @@ public class GUI {
         drawBoard(currentBoard);
         
         // Update UI selama animation
-        moveInfoLabel.setText("Animating: " + findMoveInfo(currentBoard, nextBoard));
+        moveInfoLabel.setText("Animasi: " + findMoveInfo(currentBoard, nextBoard));
         prevButton.setEnabled(false);
         nextButton.setEnabled(false);
         playToggle.setEnabled(false);
         
         int delay = 1000 / (speedSlider.getValue() * 2); // delay nya agar sesuai dengan speed slider
-        animationTimer = new Timer(delay, new ActionListener() {
+        animationTimer = new Timer(delay, new ActionListener() { // atur atur ajala ini
             @Override
             public void actionPerformed(ActionEvent e) {
                 animationStep++;
@@ -617,8 +616,8 @@ public class GUI {
         int rows = grid.length;
         int cols = grid[0].length;
         
-        int panelWidth = boardContainerPanel.getWidth() - 40;
-        int panelHeight = boardContainerPanel.getHeight() - 40;
+        int panelWidth = boardContainerPanel.getWidth() - 100; // pengaturan ukuran papan, atur atur aja dissini kalo misalakn banyak baris dan kolom yang dites 
+        int panelHeight = boardContainerPanel.getHeight() - 100;
         
         int cellSize = Math.min(panelWidth / cols, panelHeight / rows);
         if (cellSize < 10) cellSize = 40; 
@@ -696,12 +695,12 @@ public class GUI {
             return;
         }
         
-        playToggle.setText("■ Stop");
+        playToggle.setText("[] Stop");
         animateToStep(currentStep + 1);
     }
     
     private void stopAutoPlay() {
-        playToggle.setText("▶ Auto Play");
+        playToggle.setText(">> Auto Play");
         if (animationTimer != null && animationTimer.isRunning()) {
             animationTimer.stop();
         }
