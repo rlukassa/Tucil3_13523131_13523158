@@ -142,13 +142,19 @@ Algoritma berkinerja berbeda tergantung pada kompleksitas puzzle:
 ## 👥 Kontributor
 
 <p align="center">
-  <a href="https://github.com/Awfidz">
-    <img src="https://avatars.githubusercontent.com/u/167051609?v=4" width="100px" alt="Kontributor 1" /><br />
-    <sub>13523131</sub>
-  </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://github.com/rlukassa">
-    <img src="https://avatars.githubusercontent.com/u/164935134?v=4" width="100px" alt="Kontributor 2" /><br />
-    <sub>13523158</sub>
-  </a>
+  <table>
+    <tr align="center">
+      <td>
+        <img src="https://github.com/Awfidz.png" width="100" height="100"><br>
+        <b>Ahmad Wafi Idzharulhaqq</b><br>
+        13523131
+      </td>
+      <td>
+        <img src="https://github.com/rlukassa.png" width="100" height="100"><br>
+        <b>Lukas Raja Agripa</b><br>
+        13523158
+      </td>
+    </tr>
+  </table>
 </p>
+
