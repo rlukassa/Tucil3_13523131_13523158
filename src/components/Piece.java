@@ -1,4 +1,4 @@
-package src;
+package components;
 public class Piece {
     private char id;
     private int x, y; // Koordinat kiri atas atau atas (tergantung orientasi)
