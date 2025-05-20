@@ -48,12 +48,12 @@ public class Main {
         
         // Loop until a valid algorithm is chosen
         do {
-            System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar/SimulatedAnnealing): ");
+            System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar/SimulatedAnnealing/IDS): ");
             System.out.print(BLUE_BG + " ➤ " + RESET + " ");
             algo = scanner.nextLine().trim();
             if (!(algo.equalsIgnoreCase("UCS") || algo.equalsIgnoreCase("Greedy") || 
-                  algo.equalsIgnoreCase("AStar") || algo.equalsIgnoreCase("SimulatedAnnealing"))) {
-                System.out.println(RED_BOLD + "✗ Algoritma tidak valid. Pilih UCS, Greedy, AStar, atau SimulatedAnnealing." + RESET);
+                  algo.equalsIgnoreCase("AStar") || algo.equalsIgnoreCase("SimulatedAnnealing") || algo.equalsIgnoreCase("IDS"))) {
+                System.out.println(RED_BOLD + "✗ Algoritma tidak valid. Pilih UCS, Greedy, AStar, SimulatedAnnealing, atau IDS." + RESET);
                 algo = null;
             }
         } while (algo == null);
@@ -169,7 +169,7 @@ public class Main {
 
     // Make readInput public static so GUI can access it
     public static GameBoard readInput(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) {
+        try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) { 
             String[] dims = br.readLine().split(" ");
             int rows = Integer.parseInt(dims[0].trim()); 
             int cols = Integer.parseInt(dims[1].trim());

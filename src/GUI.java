@@ -184,7 +184,7 @@ public class GUI {
         browseButton = new JButton("Pilih File");
         browseButton.setFont(REGULAR_FONT); 
         browseButton.setFocusPainted(false);
-          algoBox = new JComboBox<>(new String[]{"UCS", "Greedy", "AStar" , "SimulatedAnnealing"}); // bakal ditambah algoritma lain 
+        algoBox = new JComboBox<>(new String[]{"UCS", "Greedy", "AStar", "SimulatedAnnealing", "IDS"}); // bakal ditambah algoritma lain 
         algoBox.setFont(REGULAR_FONT);
 
         // Heuristic selection

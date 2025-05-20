@@ -34,6 +34,8 @@ public class Solver {
             return aStar(initialBoard);
         } else if (algorithm.equals("SimulatedAnnealing")) {
             return simulatedAnnealing(initialBoard);
+        } else if (algorithm.equals("IDS")) {
+            return iterativeDeepeningSearch(initialBoard);
         }
         return null;
     }
@@ -42,8 +44,6 @@ public class Solver {
         PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(Node::getCost));
         Set<String> visited = new HashSet<>();
         queue.add(new Node(initialBoard, null, 0, 0));
-        Map<GameBoard, Node> nodeMap = new HashMap<>();
-        nodeMap.put(initialBoard, queue.peek());
 
         while (!queue.isEmpty()) {
             Node current = queue.poll();
@@ -62,16 +62,12 @@ public class Solver {
                     if (!visited.contains(neighborState)) {
                         Node newNode = new Node(neighbor, current, current.getCost() + 1, 0);
                         queue.add(newNode);
-                        nodeMap.put(neighbor, newNode);
                     }
                 }
             }
         }
-        
         // Simpan final temperature untuk statistik
         finalTemperature = temperature;
-
-        // System.out.println("Node Visited: " + nodesVisited);
         return null;
     }
 
@@ -79,8 +75,6 @@ public class Solver {
         PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(Node::getHeuristic));
         Set<String> visited = new HashSet<>();
         queue.add(new Node(initialBoard, null, 0, initialBoard.getHeuristic(heuristic)));
-        Map<GameBoard, Node> nodeMap = new HashMap<>();
-        nodeMap.put(initialBoard, queue.peek());
 
         while (!queue.isEmpty()) {
             Node current = queue.poll();
@@ -99,7 +93,6 @@ public class Solver {
                     if (!visited.contains(neighborState)) {
                         Node newNode = new Node(neighbor, current, 0, neighbor.getHeuristic(heuristic));
                         queue.add(newNode);
-                        nodeMap.put(neighbor, newNode);
                     }
                 }
             }
@@ -111,8 +104,6 @@ public class Solver {
         PriorityQueue<Node> queue = new PriorityQueue<>(Comparator.comparingInt(Node::getTotalCost));
         Set<String> visited = new HashSet<>();
         queue.add(new Node(initialBoard, null, 0, initialBoard.getHeuristic(heuristic)));
-        Map<GameBoard, Node> nodeMap = new HashMap<>();
-        nodeMap.put(initialBoard, queue.peek());
 
         while (!queue.isEmpty()) {
             Node current = queue.poll();
@@ -131,14 +122,13 @@ public class Solver {
                     if (!visited.contains(neighborState)) {
                         Node newNode = new Node(neighbor, current, current.getCost() + 1, neighbor.getHeuristic(heuristic));
                         queue.add(newNode);
-                        nodeMap.put(neighbor, newNode);
                     }
                 }
             }
         }
         return null;
     }
-
+  
     /**
      * Implementasi Simulated Annealing untuk Rush Hour
      * SA menggunakan probabilitas untuk menerima state yang lebih buruk,
@@ -404,6 +394,49 @@ public class Solver {
         
         Collections.reverse(path);
         return path;
+
+    private List<GameBoard> iterativeDeepeningSearch(GameBoard initialBoard) {
+        int depth = 0;
+        while (true) {
+            Set<String> visited = new HashSet<>();
+            nodesVisited = 0;
+            Node root = new Node(initialBoard, null, 0, 0);
+            List<GameBoard> result = depthLimitedSearch(root, depth, visited);
+            if (result != null) {
+                return result;
+            }
+            depth++;
+            if (depth > 1000) {
+                return null;
+            }
+        }
+    }
+
+    private List<GameBoard> depthLimitedSearch(Node node, int limit, Set<String> visited) {
+        nodesVisited++;
+        GameBoard board = node.getBoard();
+        if (board.isGoal()) {
+            return reconstructPath(node);
+        }
+        if (limit == 0) {
+            return null;
+        }
+        String boardState = boardToString(board);
+        if (visited.contains(boardState)) {
+            return null;
+        }
+        visited.add(boardState);
+        for (GameBoard neighbor : board.getNeighbors()) {
+            String neighborState = boardToString(neighbor);
+            if (!visited.contains(neighborState)) {
+                Node child = new Node(neighbor, node, node.getCost() + 1, 0);
+                List<GameBoard> result = depthLimitedSearch(child, limit - 1, visited);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 
     private List<GameBoard> reconstructPath(Node goalNode) {
@@ -425,7 +458,6 @@ public class Solver {
                 sb.append(c);
             }
         }
-        // Append primary piece position and exit position to distinguish states
         sb.append("P").append(board.getPrimaryPiece().getX()).append(",").append(board.getPrimaryPiece().getY());
         sb.append("E").append(board.getExitX()).append(",").append(board.getExitY());
         return sb.toString();
