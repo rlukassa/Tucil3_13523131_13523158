@@ -1,5 +1,5 @@
 <p align="center">
- <img width="100px" src="https://static.vecteezy.com/system/resources/previews/016/907/583/original/red-car-icon-free-png.png" align="center" alt="Rush Hour Solver" />
+ <img width="100px" src="https://www.google.com/imgres?q=icon%20rush%20hour%20game&imgurl=https%3A%2F%2Fi.pinimg.com%2F474x%2Ffc%2F85%2Fb2%2Ffc85b2fd54c554583bc38c00f1548294.jpg&imgrefurl=https%3A%2F%2Fmx.pinterest.com%2Fpin%2F897412663240059060%2F&docid=PiyQOw0MtRMXCM&tbnid=bwQrrtfqI1WxFM&vet=12ahUKEwji8KmZsrGNAxW2UGwGHTIOJdIQM3oECEUQAA..i&w=279&h=279&hcb=2&ved=2ahUKEwji8KmZsrGNAxW2UGwGHTIOJdIQM3oECEUQAA" align="center" alt="Rush Hour Solver" />
  <h2 align="center">Rush Hour Solver</h2>
  <p align="center">Implementasi UCS, Greedy, A*, dan Simulated Annealing untuk permainan puzzle Rush Hour</p>
 </p>
