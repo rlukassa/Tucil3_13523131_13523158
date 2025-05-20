@@ -1,0 +1,11 @@
+8 8 
+2
+AAA.BBB.
+CCC.DDD.
+EEFFFGG.
+HHHIIJJ.
+....P...
+....P...
+KKQ.LMM.
+NNQ.LOO.
+   K
