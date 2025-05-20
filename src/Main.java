@@ -1,8 +1,6 @@
 package src;
 import java.io.*;
 import java.util.*;
-// import java.io.File ; 
-
 
 public class Main {
     // ANSI colors and styles for CLI interface
@@ -11,6 +9,7 @@ public class Main {
     private static final String YELLOW_BOLD = "\u001B[1;93m";
     private static final String RED_BOLD = "\u001B[1;91m";
     private static final String BLUE_BG = "\u001B[44m";
+    private static final String RESET = "\u001B[0m";
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -22,7 +21,7 @@ public class Main {
             "╔═══════════════════════════════════════════════════════╗\n" +
             "║                                                       ║\n" +
             "║                     RUSH HOUR                         ║\n" +
-            "║          UCS, Greedy Best First Search, A*            ║\n" +
+            "║    UCS, Greedy, A*, Simulated Annealing Solver       ║\n" +
             "║                   Implementation                      ║\n" +
             "║                                                       ║\n" +
             "╚═══════════════════════════════════════════════════════╝" + RESET);
@@ -39,30 +38,86 @@ public class Main {
             System.out.println(YELLOW_BOLD + "\n⌛ Membaca file input..." + RESET);
             initialBoard = readInput(filename);
             if (initialBoard == null) {
-            System.out.println(RED_BOLD + "X Gagal membaca file input. Silakan coba lagi." + RESET);
+            System.out.println(RED_BOLD + "✗ Gagal membaca file input. Silakan coba lagi." + RESET);
             }
-        } while (initialBoard == null);            System.out.println(GREEN_BOLD + "* File berhasil dibaca!" + RESET);
+        } while (initialBoard == null);
+        System.out.println(GREEN_BOLD + "✓ File berhasil dibaca!" + RESET);
 
         String algo;
+        String heuristic = "Manhattan Distance"; // Default heuristic
+        
         // Loop until a valid algorithm is chosen
         do {
-            System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar/IDS): ");
+            System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar/SimulatedAnnealing/IDS): ");
             System.out.print(BLUE_BG + " ➤ " + RESET + " ");
             algo = scanner.nextLine().trim();
-            if (!(algo.equalsIgnoreCase("UCS") || algo.equalsIgnoreCase("Greedy") || algo.equalsIgnoreCase("AStar") || algo.equalsIgnoreCase("IDS"))) {
-            System.out.println(RED_BOLD + "X Algoritma tidak valid. Pilih UCS, Greedy, AStar, atau IDS." + RESET);
-            algo = null;
+            if (!(algo.equalsIgnoreCase("UCS") || algo.equalsIgnoreCase("Greedy") || 
+                  algo.equalsIgnoreCase("AStar") || algo.equalsIgnoreCase("SimulatedAnnealing") || algo.equalsIgnoreCase("IDS"))) {
+                System.out.println(RED_BOLD + "✗ Algoritma tidak valid. Pilih UCS, Greedy, AStar, SimulatedAnnealing, atau IDS." + RESET);
+                algo = null;
             }
         } while (algo == null);
+        
+        // Choose heuristic if algorithm uses it
+        if (!algo.equalsIgnoreCase("UCS")) {
+            System.out.println(YELLOW_BOLD + "\n► Pilih heuristik:" + RESET);
+            
+            if (algo.equalsIgnoreCase("Greedy") || algo.equalsIgnoreCase("AStar")) {
+                System.out.println("1. Manhattan Distance (Admissible)");
+                System.out.println("2. Manhattan + Blocking");
+                System.out.println("3. Manhattan + Alignment");
+                System.out.println("4. Enhanced Heuristic");
+            } else if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
+                System.out.println("1. Manhattan Distance");
+                System.out.println("2. Manhattan + Blocking");
+                System.out.println("3. Manhattan + Alignment");
+                System.out.println("4. Enhanced Heuristic");
+                System.out.println("5. SA Custom Cost (Recommended)");
+            }
+            
+            System.out.print(BLUE_BG + " ➤ " + RESET + " ");
+            String heuristicChoice = scanner.nextLine().trim();
+            
+            switch (heuristicChoice) {
+                case "1":
+                    heuristic = "Manhattan Distance";
+                    break;
+                case "2":
+                    heuristic = "Manhattan + Blocking";
+                    break;
+                case "3":
+                    heuristic = "Manhattan + Alignment";
+                    break;
+                case "4":
+                    heuristic = "Enhanced Heuristic";
+                    break;
+                case "5":
+                    if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
+                        heuristic = "SA Custom Cost";
+                    } else {
+                        heuristic = "Manhattan Distance"; // fallback
+                    }
+                    break;
+                default:
+                    heuristic = "Manhattan Distance"; // default
+                    break;
+            }
+            
+            System.out.println(GREEN_BOLD + "✓ Heuristik dipilih: " + heuristic + RESET);
+        }
 
         // Jalankan solver
-        System.out.println(YELLOW_BOLD + "\n⌛ Mencari solusi menggunakan algoritma " + algo + "..." + RESET);
-        Solver solver = new Solver(algo);
+        System.out.println(YELLOW_BOLD + "\n⌛ Mencari solusi menggunakan " + algo + 
+                          (algo.equalsIgnoreCase("UCS") ? "" : " dengan " + heuristic) + "..." + RESET);
+        
+        Solver solver = new Solver(algo, heuristic);
         long startTime = System.currentTimeMillis();
         List<GameBoard> solution = solver.solve(initialBoard);
-        long endTime = System.currentTimeMillis();        // Tampilkan hasil
+        long endTime = System.currentTimeMillis();
+        
+        // Tampilkan hasil
         if (solution != null) {
-            System.out.println(GREEN_BOLD + "+ Solusi ditemukan!" + RESET);
+            System.out.println(GREEN_BOLD + "✓ Solusi ditemukan!" + RESET);
             
             // Print solution first
             printSolution(solution);
@@ -71,14 +126,48 @@ public class Main {
             System.out.println(CYAN_BOLD + "┌───────────────────────────────────────┐");
             System.out.println("│  Statistik Pencarian:                 │");
             System.out.println("├───────────────────────────────────────┤");
+            System.out.printf("│  + Algoritma       : %-16s │\n", algo);
+            if (!algo.equalsIgnoreCase("UCS")) {
+                System.out.printf("│  + Heuristik       : %-16s │\n", heuristic.length() > 16 ? 
+                    heuristic.substring(0, 13) + "..." : heuristic);
+            }
             System.out.printf("│  + Node dikunjungi : %-16d │\n", solver.getNodesVisited());
             System.out.printf("│  + Waktu eksekusi  : %-5d ms         │\n", (endTime - startTime));
+            System.out.printf("│  + Jumlah langkah  : %-16d │\n", (solution.size() - 1));
+            
+            // Print additional statistics for Simulated Annealing
+            if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
+                System.out.printf("│  + Gerakan diterima: %-16d │\n", solver.getAcceptedMoves());
+                System.out.printf("│  + Gerakan ditolak : %-16d │\n", solver.getRejectedMoves());
+                System.out.printf("│  + Temp akhir      : %-16.3f │\n", solver.getFinalTemperature());
+            }
             System.out.println("└───────────────────────────────────────┘" + RESET);
+            
+            // Print performance analysis for Simulated Annealing
+            if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
+                System.out.println(YELLOW_BOLD + "\n📊 Analisis Simulated Annealing:" + RESET);
+                System.out.println("• SA menggunakan pendekatan probabilistik untuk eksplorasi state space");
+                System.out.println("• Dapat menerima solusi yang lebih buruk dengan probabilitas tertentu");
+                System.out.println("• Temperature yang menurun secara bertahap mengurangi eksplorasi random");
+                System.out.println("• Efektif untuk menghindari local optimum dalam problem optimasi");
+                
+                double acceptanceRate = (double)solver.getAcceptedMoves() / (solver.getAcceptedMoves() + solver.getRejectedMoves()) * 100;
+                System.out.printf("• Tingkat penerimaan gerakan: %.1f%%\n", acceptanceRate);
+            }
         } else {
-            System.out.println(RED_BOLD + "X Tidak ditemukan solusi." + RESET);
+            System.out.println(RED_BOLD + "✗ Tidak ditemukan solusi." + RESET);
+            if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
+                System.out.println(YELLOW_BOLD + "💡 Tips untuk Simulated Annealing:" + RESET);
+                System.out.println("  • Coba tingkatkan initial temperature");
+                System.out.println("  • Kurangi cooling rate untuk eksplorasi yang lebih lama");
+                System.out.println("  • Tingkatkan max iterations");
+                System.out.println("  • Problem ini mungkin memerlukan multiple restarts");
+            }
         }
         scanner.close();
-    }    // Make readInput public static so GUI can access it
+    }
+
+    // Make readInput public static so GUI can access it
     public static GameBoard readInput(String filename) {
         try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) { 
             String[] dims = br.readLine().split(" ");
@@ -189,10 +278,13 @@ public class Main {
         } catch (IOException e) {
             return null;
         }
-    }    // ANSI styling codes
+    }
+
+    // ANSI styling codes
     private static final String BOLD = "\u001B[1m";
     private static final String UNDERLINE = "\u001B[4m";
-      private static void printSolution(List<GameBoard> solution) {
+    
+    private static void printSolution(List<GameBoard> solution) {
         
         System.out.println(BOLD + UNDERLINE + "Papan Awal:" + RESET);
         printBoard(solution.get(0));
@@ -247,8 +339,9 @@ public class Main {
             }
         }
         return "Tidak ada gerakan";
-    }    // ANSI color codes
-    private static final String RESET = "\u001B[0m";
+    }
+
+    // ANSI color codes
     private static final String[] COLORS = {
         "\u001B[31m", // Red
         "\u001B[32m", // Green

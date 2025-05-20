@@ -34,10 +34,11 @@ public class GUI {
     private JPanel statsPanel; // panel statistik
     private JPanel navigationPanel; // panel navigasi
     private JPanel movesPanel; // panel histori gerakan
-
     private JTextField fileField; // untuk menampilkan nama fielny
     private JButton browseButton; // buat search fileny
     private JComboBox<String> algoBox; // pilih algoritma dalam combo box
+    private JComboBox<String> heuristicBox; // pilih heuristik dalam combo box
+    private JLabel heuristicLabel; // label untuk heuristik
     private JButton solveButton; // untuk tombol cari solusi
     private JButton prevButton; // untuk tombol sebelumnya
     private JButton nextButton; // untuk tombol selanjutnya
@@ -183,11 +184,14 @@ public class GUI {
         browseButton = new JButton("Pilih File");
         browseButton.setFont(REGULAR_FONT); 
         browseButton.setFocusPainted(false);
-        
-        algoBox = new JComboBox<>(new String[]{"UCS", "Greedy", "AStar", "IDS"}); // bakal ditambah algoritma lain 
+        algoBox = new JComboBox<>(new String[]{"UCS", "Greedy", "AStar", "SimulatedAnnealing", "IDS"}); // bakal ditambah algoritma lain 
         algoBox.setFont(REGULAR_FONT);
 
-        // Masukkan logika heurisstik disini... (milih heurisstiknya maksudn ya)
+        // Heuristic selection
+        heuristicLabel = new JLabel("Heuristik:");
+        heuristicBox = new JComboBox<>();
+        heuristicBox.setFont(REGULAR_FONT);
+        updateHeuristicOptions(); // Update options based on current algorithm
         
         solveButton = new JButton("Cari Solusi");
         solveButton.setFont(BOLD_FONT);
@@ -198,6 +202,8 @@ public class GUI {
         inputPanel.add(browseButton);
         inputPanel.add(new JLabel("Algoritma:"));
         inputPanel.add(algoBox);
+        inputPanel.add(heuristicLabel);
+        inputPanel.add(heuristicBox);
         inputPanel.add(solveButton);
         
         panel.add(inputPanel);
@@ -253,9 +259,43 @@ public class GUI {
         );
     }
     
+    private void updateHeuristicOptions() {
+        String selectedAlgo = (String) algoBox.getSelectedItem();
+        heuristicBox.removeAllItems();
+        
+        if (selectedAlgo.equals("UCS")) {
+            heuristicLabel.setVisible(false);
+            heuristicBox.setVisible(false);
+            return;
+        }
+        
+        heuristicLabel.setVisible(true);
+        heuristicBox.setVisible(true);
+        
+        // Add common heuristic options
+        heuristicBox.addItem("Manhattan Distance");
+        heuristicBox.addItem("Manhattan + Blocking");
+        // heuristicBox.addItem("Manhattan + Alignment");
+        heuristicBox.addItem("Enhanced Heuristic");
+        
+        // Add SimulatedAnnealing specific option
+        if (selectedAlgo.equals("SimulatedAnnealing")) {
+            heuristicBox.addItem("SA Custom Cost");
+            heuristicBox.setSelectedItem("SA Custom Cost"); // Default for SA
+        } else {
+            heuristicBox.setSelectedItem("Manhattan Distance"); // Default for others
+        }
+    }
+    
     private void setupListeners() { // buat listener, ibarat penghubung antara GUI sama logika
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) { chooseFile(); }
+        });
+        
+        algoBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateHeuristicOptions();
+            }
         });
         
         solveButton.addActionListener(new ActionListener() {
@@ -383,9 +423,9 @@ public class GUI {
                 if (initialBoard == null) {
                     return null;
                 }
-                
-                String algo = (String) algoBox.getSelectedItem();
-                solver = new Solver(algo);
+                  String algo = (String) algoBox.getSelectedItem();
+                String heuristicType = algo.equals("UCS") ? "Manhattan Distance" : (String) heuristicBox.getSelectedItem();
+                solver = new Solver(algo, heuristicType);
                 long start = System.currentTimeMillis();
                 List<GameBoard> solution = solver.solve(initialBoard);
                 execTime = System.currentTimeMillis() - start;
@@ -427,10 +467,16 @@ public class GUI {
         
         worker.execute();
     }
-    
-    private void updateStatistics() { // info tentang statistik
+      private void updateStatistics() { // info tentang statistik
         StringBuilder sb = new StringBuilder();
-        sb.append("Algoritma: ").append(algoBox.getSelectedItem()).append("\n");
+        String algo = (String) algoBox.getSelectedItem();
+        sb.append("Algoritma: ").append(algo).append("\n");
+        
+        // Add heuristic info if not UCS
+        if (!algo.equals("UCS")) {
+            sb.append("Heuristik: ").append(heuristicBox.getSelectedItem()).append("\n");
+        }
+        
         sb.append("Node dikunjungi: ").append(solver.getNodesVisited()).append(" node\n");
         sb.append("Waktu eksekusi: ").append(execTime).append(" ms\n");
         sb.append("Jumlah langkah: ").append(solutionSteps.size() - 1).append(" langkah");
