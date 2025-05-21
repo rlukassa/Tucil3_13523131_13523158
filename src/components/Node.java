@@ -1,4 +1,5 @@
-package src;
+package components;
+
 public class Node implements Comparable<Node> {
     private GameBoard board;
     private Node parent;

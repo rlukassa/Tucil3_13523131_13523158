@@ -1,4 +1,4 @@
-package src;
+package view;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.File;
+
+import components.*;
+import utils.*;
 
 public class GUI {
     // Buat warna dan font untuk tema terang dan gelap
@@ -196,6 +200,11 @@ public class GUI {
         solveButton = new JButton("Cari Solusi");
         solveButton.setFont(BOLD_FONT);
         solveButton.setFocusPainted(false);
+
+        // New export solution button
+        JButton exportButton = new JButton("Export Solution");
+        exportButton.setFont(BOLD_FONT);
+        exportButton.setFocusPainted(false);
         
         inputPanel.add(new JLabel("File Input:"));
         inputPanel.add(fileField); // input file 
@@ -205,8 +214,30 @@ public class GUI {
         inputPanel.add(heuristicLabel);
         inputPanel.add(heuristicBox);
         inputPanel.add(solveButton);
+        inputPanel.add(exportButton);
         
         panel.add(inputPanel);
+
+        // Add action listener for export button
+        exportButton.addActionListener(e -> {
+            if (solutionSteps == null || solutionSteps.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "Tidak ada solusi untuk diekspor.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Simpan Solusi Sebagai");
+            int userSelection = fileChooser.showSaveDialog(frame);
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                File fileToSave = fileChooser.getSelectedFile();
+                try {
+                    FileUtils.printSolutionToFile(solutionSteps, fileToSave.getAbsolutePath());
+                    JOptionPane.showMessageDialog(frame, "Solusi berhasil disimpan ke:\n" + fileToSave.getAbsolutePath(), "Sukses", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Gagal menyimpan solusi:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         return panel; // return panel kontrolnya 
     }
     
@@ -419,7 +450,7 @@ public class GUI {
         SwingWorker<List<GameBoard>, Void> worker = new SwingWorker<List<GameBoard>, Void>() {
             @Override
             protected List<GameBoard> doInBackground() throws Exception {
-                GameBoard initialBoard = Main.readInput(filename);
+                GameBoard initialBoard = FileUtils.readFile(filename);
                 if (initialBoard == null) {
                     return null;
                 }
@@ -720,16 +751,41 @@ public class GUI {
         int exitX = board.getExitX();
         int exitY = board.getExitY();
         
-        if (exitX >= 0 && exitX < cols && exitY >= 0 && exitY < rows) {
-            JLabel exitLabel = new JLabel("EXIT", SwingConstants.CENTER);
-            exitLabel.setOpaque(true);
-            exitLabel.setBorder(BorderFactory.createLineBorder(Color.GREEN, 2));
-            exitLabel.setBackground(new Color(60, 179, 113, 120));
-            exitLabel.setForeground(isDarkTheme ? Color.WHITE : Color.BLACK);
-            exitLabel.setFont(new Font("Arial", Font.BOLD, cellSize / 3));
-            exitLabel.setBounds(20 + exitX * cellSize, 20 + exitY * cellSize, cellSize, cellSize);
-            boardPanel.add(exitLabel, Integer.valueOf(2));
+        JLabel kLabel = new JLabel("K", SwingConstants.CENTER);
+        kLabel.setOpaque(true);
+        kLabel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+        kLabel.setBackground(new Color(255, 200, 200, 180));
+        kLabel.setForeground(isDarkTheme ? Color.WHITE : Color.RED.darker());
+        kLabel.setFont(new Font("Arial", Font.BOLD, cellSize / 2));
+        
+        int x = 20;
+        int y = 20;
+        int width = cellSize;
+        int height = cellSize;
+        
+        if (exitY == -1 && exitX >= 0 && exitX < cols) {
+            // Above the grid
+            x = 20 + exitX * cellSize;
+            y = 20 - cellSize;
+        } else if (exitY == rows && exitX >= 0 && exitX < cols) {
+            // Below the grid
+            x = 20 + exitX * cellSize;
+            y = 20 + rows * cellSize;
+        } else if (exitX == -1 && exitY >= 0 && exitY < rows) {
+            // Left of the grid
+            x = 20 - cellSize;
+            y = 20 + exitY * cellSize;
+        } else if (exitX == cols && exitY >= 0 && exitY < rows) {
+            // Right of the grid
+            x = 20 + cols * cellSize;
+            y = 20 + exitY * cellSize;
+        } else {
+            // Unknown position, do not display
+            return;
         }
+        
+        kLabel.setBounds(x, y, width, height);
+        boardPanel.add(kLabel, Integer.valueOf(3));
         
         boardPanel.revalidate();
         boardPanel.repaint();

@@ -1,6 +1,8 @@
-package src;
+package utils;
 
 import java.util.*;
+
+import components.*;
 
 public class Solver {
     private String algorithm;
@@ -394,6 +396,7 @@ public class Solver {
         
         Collections.reverse(path);
         return path;
+    }
 
     private List<GameBoard> iterativeDeepeningSearch(GameBoard initialBoard) {
         int depth = 0;
@@ -451,14 +454,12 @@ public class Solver {
     }
 
     private String boardToString(GameBoard board) {
+        // Replace with a more compact and efficient hash-based representation
+        // Use pieces positions and ids to generate a unique string
         StringBuilder sb = new StringBuilder();
-        char[][] grid = board.getGrid();
-        for (char[] row : grid) {
-            for (char c : row) {
-                sb.append(c);
-            }
+        for (Piece p : board.getPieces()) {
+            sb.append(p.getId()).append(":").append(p.getX()).append(",").append(p.getY()).append(";");
         }
-        sb.append("P").append(board.getPrimaryPiece().getX()).append(",").append(board.getPrimaryPiece().getY());
         sb.append("E").append(board.getExitX()).append(",").append(board.getExitY());
         return sb.toString();
     }

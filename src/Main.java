@@ -1,15 +1,16 @@
-package src;
-import java.io.*;
+
 import java.util.*;
 
+import components.GameBoard;
+import utils.*;
+
 public class Main {
-    // ANSI colors and styles for CLI interface
-    private static final String CYAN_BOLD = "\u001B[1;96m";
-    private static final String GREEN_BOLD = "\u001B[1;92m";
-    private static final String YELLOW_BOLD = "\u001B[1;93m";
-    private static final String RED_BOLD = "\u001B[1;91m";
-    private static final String BLUE_BG = "\u001B[44m";
-    private static final String RESET = "\u001B[0m";
+    public static final String CYAN_BOLD = "\u001B[1;96m";
+    public static final String GREEN_BOLD = "\u001B[1;92m";
+    public static final String YELLOW_BOLD = "\u001B[1;93m";
+    public static final String RED_BOLD = "\u001B[1;91m";
+    public static final String BLUE_BG = "\u001B[44m";
+    public static final String RESET = "\u001B[0m";
     
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -28,7 +29,6 @@ public class Main {
         
         String filename;
         GameBoard initialBoard = null;
-        // Loop until a valid file is read
         do {
             System.out.println(YELLOW_BOLD + "\n► Masukkan nama file input " + RESET + "(contoh: test.txt): ");
             System.out.print(BLUE_BG + " ➤ " + RESET + " ");
@@ -36,7 +36,7 @@ public class Main {
 
             // Baca input dari file
             System.out.println(YELLOW_BOLD + "\n⌛ Membaca file input..." + RESET);
-            initialBoard = readInput(filename);
+            initialBoard = FileUtils.readFile(filename);
             if (initialBoard == null) {
             System.out.println(RED_BOLD + "✗ Gagal membaca file input. Silakan coba lagi." + RESET);
             }
@@ -44,9 +44,8 @@ public class Main {
         System.out.println(GREEN_BOLD + "✓ File berhasil dibaca!" + RESET);
 
         String algo;
-        String heuristic = "Manhattan Distance"; // Default heuristic
+        String heuristic = "Manhattan Distance"; // heuristik default
         
-        // Loop until a valid algorithm is chosen
         do {
             System.out.println(YELLOW_BOLD + "\n► Pilih algoritma " + RESET + "(UCS/Greedy/AStar/SimulatedAnnealing/IDS): ");
             System.out.print(BLUE_BG + " ➤ " + RESET + " ");
@@ -58,7 +57,6 @@ public class Main {
             }
         } while (algo == null);
         
-        // Choose heuristic if algorithm uses it
         if (!algo.equalsIgnoreCase("UCS")) {
             System.out.println(YELLOW_BOLD + "\n► Pilih heuristik:" + RESET);
             
@@ -95,11 +93,11 @@ public class Main {
                     if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
                         heuristic = "SA Custom Cost";
                     } else {
-                        heuristic = "Manhattan Distance"; // fallback
+                        heuristic = "Manhattan Distance"; 
                     }
                     break;
                 default:
-                    heuristic = "Manhattan Distance"; // default
+                    heuristic = "Manhattan Distance"; 
                     break;
             }
             
@@ -121,8 +119,16 @@ public class Main {
             
             // Print solution first
             printSolution(solution);
+
+            System.out.println(YELLOW_BOLD + "\nApakah Anda ingin menyimpan solusi ke file? (y/n): " + RESET);
+            String saveChoice = scanner.nextLine().trim().toLowerCase();
+            if (saveChoice.equals("y") || saveChoice.equals("yes")) {
+                System.out.println(YELLOW_BOLD + "Masukkan nama file output (contoh: hasil.txt): " + RESET);
+                String outputFilename = scanner.nextLine().trim();
+                FileUtils.printSolutionToFile(solution, outputFilename);
+                System.out.println(GREEN_BOLD + "✓ Solusi berhasil disimpan ke " + outputFilename + RESET);
+            }
             
-            // Then print statistics
             System.out.println(CYAN_BOLD + "┌───────────────────────────────────────┐");
             System.out.println("│  Statistik Pencarian:                 │");
             System.out.println("├───────────────────────────────────────┤");
@@ -135,15 +141,13 @@ public class Main {
             System.out.printf("│  + Waktu eksekusi  : %-5d ms         │\n", (endTime - startTime));
             System.out.printf("│  + Jumlah langkah  : %-16d │\n", (solution.size() - 1));
             
-            // Print additional statistics for Simulated Annealing
             if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
                 System.out.printf("│  + Gerakan diterima: %-16d │\n", solver.getAcceptedMoves());
                 System.out.printf("│  + Gerakan ditolak : %-16d │\n", solver.getRejectedMoves());
                 System.out.printf("│  + Temp akhir      : %-16.3f │\n", solver.getFinalTemperature());
             }
             System.out.println("└───────────────────────────────────────┘" + RESET);
-            
-            // Print performance analysis for Simulated Annealing
+
             if (algo.equalsIgnoreCase("SimulatedAnnealing")) {
                 System.out.println(YELLOW_BOLD + "\n📊 Analisis Simulated Annealing:" + RESET);
                 System.out.println("• SA menggunakan pendekatan probabilistik untuk eksplorasi state space");
@@ -167,120 +171,6 @@ public class Main {
         scanner.close();
     }
 
-    // Make readInput public static so GUI can access it
-    public static GameBoard readInput(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader("test/" + filename))) { 
-            String[] dims = br.readLine().split(" ");
-            int rows = Integer.parseInt(dims[0].trim()); 
-            int cols = Integer.parseInt(dims[1].trim());
-            /* Jumlah piece bukan primary - currently unused */
-            br.readLine(); // Skip this line as we're not using the value
-
-            int exitX = -1, exitY = -1;
-            
-            // CHECK FOR EXIT ABOVE THE GRID
-            String topLine = br.readLine();
-            if (topLine.contains("K")) {
-                // Count leading spaces to determine column position
-                int kPos = topLine.indexOf('K');
-                exitX = kPos; // Column position where K is found
-                exitY = -1;   // K is above the grid
-                System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di atas grid pada kolom " + exitX + RESET);
-                // Read a new line to start the grid proper
-                topLine = br.readLine();
-            }
-
-            char[][] grid = new char[rows][cols];
-            for (int i = 0; i < rows; i++) {
-                String line;
-                if (i == 0 && topLine != null) {
-                    // Use topLine for the first row if we already read it
-                    line = topLine;
-                } else {
-                    line = br.readLine();
-                }
-                line = line.trim();
-                  // Check for left edge K first
-                if (line.charAt(0) == 'K') {
-                    exitX = -1;
-                    exitY = i;
-                    System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di kiri grid pada baris " + exitY + RESET);
-                    // Process the rest of the line normally, but skip the K character
-                    String restOfLine = line.substring(1); // Skip the K at the beginning
-                    for (int j = 0; j < cols; j++) {
-                        if (j < restOfLine.length()) {
-                            grid[i][j] = restOfLine.charAt(j);
-                        } else {
-                            grid[i][j] = '.'; // Fill with empty if needed
-                        }
-                    }
-                } else {
-                    // Process regular line
-                    for (int j = 0; j < cols; j++) {
-                        grid[i][j] = line.charAt(j);
-                    }
-                }
-                  // Check for characters beyond the declared columns (right edge exit)
-                // Only do this check for regular lines (not those that had K at the beginning)
-                if (line.charAt(0) != 'K') {
-                    for (int j = cols; j < line.length(); j++) {
-                        char ch = line.charAt(j);
-                        if (ch == 'K') {
-                            exitX = cols;
-                            exitY = i;
-                            System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di kanan grid pada baris " + exitY + RESET);
-                        } else if (ch != ' ') {
-                            System.out.println(RED_BOLD + "Input tidak valid: karakter '" + ch + "' di luar batas kolom." + RESET);
-                            return null;
-                        }
-                    }
-                }
-            }
-            
-            // CHECK FOR EXIT BELOW THE GRID
-            String bottomLine = br.readLine();
-            if (bottomLine != null && bottomLine.contains("K")) {
-                // Count leading spaces to determine column position
-                int kPos = bottomLine.indexOf('K');
-                exitX = kPos; // Column position where K is found
-                exitY = rows; // K is below the grid
-                System.out.println(YELLOW_BOLD + "Pintu keluar (K) terdeteksi di bawah grid pada kolom " + exitX + RESET);
-            }
-
-            // Proses grid untuk membuat daftar piece
-            ArrayList<Piece> pieces = new ArrayList<>();
-            Set<Character> processed = new HashSet<>();
-
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    char c = grid[i][j];
-                    if (c != '.' && c != 'K' && !processed.contains(c)) {
-                        processed.add(c);
-                        // Tentukan ukuran dan orientasi
-                        int size = 1;
-                        boolean isHorizontal = false;
-                        if (j + 1 < cols && grid[i][j + 1] == c) {
-                            isHorizontal = true;
-                            while (j + size < cols && grid[i][j + size] == c) size++;
-                        } else if (i + 1 < rows && grid[i + 1][j] == c) {
-                            while (i + size < rows && grid[i + size][j] == c) size++;
-                        }
-                        boolean isPrimary = (c == 'P');
-                        pieces.add(new Piece(c, j, i, size, isHorizontal, isPrimary));
-                    } else if (c == 'K') {
-                        exitX = j;
-                        exitY = i;
-                    }
-                }
-            }
-            return new GameBoard(rows, cols, pieces, exitX, exitY);
-
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    // ANSI styling codes
     private static final String BOLD = "\u001B[1m";
     private static final String UNDERLINE = "\u001B[4m";
     
@@ -292,12 +182,11 @@ public class Main {
         int totalSteps = solution.size() - 1;
         
         for (int i = 1; i < solution.size(); i++) {
-            String moveInfo = findMoveInfo(solution.get(i-1), solution.get(i));
+            String moveInfo = FileUtils.findMoveInfo(solution.get(i-1), solution.get(i));
             String[] parts = moveInfo.split(" ke ");
             String piece = parts[0];
             String direction = parts[1];
-            
-            // Get color for this piece
+
             String pieceColor = (piece.equals("P")) ? PRIMARY_COLOR : 
                 colorMap.computeIfAbsent(piece.charAt(0), key -> 
                     COLORS[Math.abs(key.hashCode()) % COLORS.length]);
@@ -311,34 +200,6 @@ public class Main {
             
             printBoard(solution.get(i));
         }
-    }
-    
-    private static String findMoveInfo(GameBoard prev, GameBoard current) {
-        ArrayList<Piece> prevPieces = prev.getPieces();
-        ArrayList<Piece> currentPieces = current.getPieces();
-        
-        for (int i = 0; i < prevPieces.size(); i++) {
-            Piece prevPiece = prevPieces.get(i);
-            Piece currPiece = currentPieces.get(i);
-            
-            if (prevPiece.getX() != currPiece.getX() || prevPiece.getY() != currPiece.getY()) {
-                char pieceId = prevPiece.getId();
-                String direction;
-                
-                if (currPiece.getX() > prevPiece.getX()) {
-                    direction = "kanan";
-                } else if (currPiece.getX() < prevPiece.getX()) {
-                    direction = "kiri";
-                } else if (currPiece.getY() > prevPiece.getY()) {
-                    direction = "bawah";
-                } else {
-                    direction = "atas";
-                }
-                
-                return pieceId + "  ke " + direction;
-            }
-        }
-        return "Tidak ada gerakan";
     }
 
     // ANSI color codes
@@ -367,15 +228,13 @@ public class Main {
         char[][] grid = board.getGrid();
         int rows = grid.length;
         int cols = grid[0].length;
-        
-        // Print top border
+
         System.out.print("┌");
         for (int j = 0; j < cols; j++) {
             System.out.print("───");
         }
         System.out.println("┐");
-        
-        // Print grid with colors
+
         for (int i = 0; i < rows; i++) {
             System.out.print("│");
             for (int j = 0; j < cols; j++) {
@@ -387,7 +246,6 @@ public class Main {
                 } else if (c == 'K') {
                     System.out.print(EXIT_COLOR + " K " + RESET);
                 } else {
-                    // Get or assign a color for this character
                     String color = colorMap.computeIfAbsent(c, key -> 
                         COLORS[Math.abs(key.hashCode()) % COLORS.length]);
                     
@@ -396,8 +254,7 @@ public class Main {
             }
             System.out.println("│");
         }
-        
-        // Print bottom border
+
         System.out.print("└");
         for (int j = 0; j < cols; j++) {
             System.out.print("───");

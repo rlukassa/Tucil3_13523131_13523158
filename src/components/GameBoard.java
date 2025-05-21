@@ -1,4 +1,4 @@
-package src;
+package components;
 import java.util.ArrayList;
 
 public class GameBoard {
@@ -141,52 +141,6 @@ public class GameBoard {
         }
         return neighbors;
     }
-
-    // ORIGINAL HEURISTIC SYSTEM - udah dipindah dan disesuaikan, , ini manhattan distance
-    /*
-    public int getHeuristic() {
-        int primaryLeft = primaryPiece.getX();
-        int primaryRight = primaryPiece.getX() + primaryPiece.getSize() - 1;
-        int primaryTop = primaryPiece.getY();
-        int primaryBottom = primaryPiece.getY() + primaryPiece.getSize() - 1;
-        
-        // Horizontal primary piece (move left/right to exit)
-        if (primaryPiece.isHorizontal()) {
-            // Exit is to the right of the board
-            if (exitX >= cols) {
-                return exitX - primaryRight;
-            } 
-            // Exit is to the left of the board
-            else if (exitX < 0) {
-                return primaryLeft - exitX;
-            }
-            // Exit is aligned horizontally, but may not be aligned vertically
-            else {
-                return Math.abs(primaryTop - exitY);
-            }
-        } 
-        // Vertical primary piece (move up/down to exit)
-        else {
-            // Exit is below the board
-            if (exitY >= rows) {
-                // Strongly encourage moving down to the bottom exit
-                return (rows - 1 - primaryBottom) * 2 + 1; // Prioritize moving down
-            } 
-            // Exit is above the board
-            else if (exitY < 0) {
-                // Encourage moving up to the top exit
-                return primaryTop * 2 + 1; // Prioritize moving up
-            }
-            // Exit is aligned vertically, but may not be aligned horizontally
-            else {
-                return Math.abs(primaryLeft - exitX);
-            }
-        }
-    }
-    */
-
-    // Heuristik terbaru ada tambahan disini 
-    
     /**
      * 1. Manhattan Distance - Pure  heuristik admissible, jadi costnya ga lebih dari yang seharusnya
      * 
