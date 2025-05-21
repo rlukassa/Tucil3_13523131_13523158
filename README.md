@@ -54,14 +54,14 @@ cd Tucil3_13523131_13523158
 
 2. Kompilasi proyek:
 ```bash
-javac -d bin src/*.java
+javac -d bin  src/*.java src/components/*.java src/utils/*.java src/view/*.java
 ```
 
 ### Menjalankan Aplikasi
 
 #### Mode GUI
 ```bash
-java -cp bin src.GUI
+java -cp bin view.GUI
 ```
 
 #### Mode CLI
